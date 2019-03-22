@@ -1,7 +1,7 @@
 # mpv-config
 
-This is a collection of configuration files for MPV, intended for high quality video.
+This is a collection of MPV configuration files, intended for high quality video rendering.
 
-They are tailored for rendering on Macs (which do not support Vulkan). In the future, I hope to solve for Mac's deprecated OpenGL subsystem by either supporting MoltenVK or Metal, directly.
+These are tailored for rendering on Macs (e.g. current generation Macbooks and iMacs), which do not support Vulkan. In the future, I hope to solve for Mac's deprecated OpenGL subsystem by either supporting MoltenVK or Metal, directly.
 
 For more details, see https://freetime.mikeconnelly.com/archives/5371
