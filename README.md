@@ -6,6 +6,6 @@ For now, the mpv.conf is tailored for rendering on Macs (e.g. current Macbooks a
 
 On Macs, you can download and install them in your ~[user profile]/.config/mpv folder.
 
-If you have a Vulkan-enabled device, you can uncomment the relevant lines to use that graphics subsystem instead of OpenGL. If you are using Windows or have your configuration files, you should modify mpv.conf accordingly. 
+If you have a Vulkan-enabled device, you can uncomment the relevant lines to use that graphics subsystem instead of OpenGL. If you are using Windows or have your configuration files in a different location, then you should modify mpv.conf accordingly. 
 
 For more details, see https://freetime.mikeconnelly.com/archives/5371
