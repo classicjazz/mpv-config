@@ -7,3 +7,11 @@ https://github.com/wiiaboo/mpv-scripts
 SHADERS
 FSRCNNX_x2_8-0-4-1.glsl
 https://github.com/igv/FSRCNN-TensorFlow
+
+KrigBilateral.glsl
+
+SSimDownscaler.glsl
+
+noise_static_chroma.hook
+
+noise_static_luma.hook
