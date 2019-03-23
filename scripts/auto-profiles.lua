@@ -190,4 +190,3 @@ end
 
 -- re-evaluate all profiles immediately
 on_idle()
-
