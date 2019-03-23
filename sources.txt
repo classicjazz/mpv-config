@@ -9,8 +9,10 @@ FSRCNNX_x2_8-0-4-1.glsl
 https://github.com/igv/FSRCNN-TensorFlow
 
 KrigBilateral.glsl
+https://gist.github.com/igv/a015fc885d5c22e6891820ad89555637
 
 SSimDownscaler.glsl
+https://gist.github.com/igv/36508af3ffc84410fe39761d6969be10
 
 noise_static_chroma.hook
 
