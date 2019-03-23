@@ -1,6 +1,6 @@
 # mpv-config
 
-This is a collection of MPV configuration files, intended for high quality rendering of traditional live TV and video disc formats. Beyond upscaling, my configuration files include optimizations for resolution, colorspace, dithering, debanding, motion interpolation, and anti-ringing. And, it applies FFMPEG’s bwdif filter for motion adaptive deinterlacing of interlaced video, such as live TV.
+This is a collection of MPV configuration files, intended for high quality rendering of traditional live TV and video disc formats. Beyond upscaling, my configuration files include optimizations for resolution, colorspace, dithering, debanding, motion interpolation, and anti-ringing. And, FFMPEG’s bwdif filter for motion adaptive deinterlacing is applied to interlaced video, such as live TV.
 
 For now, the mpv.conf is tailored for rendering on Macs (e.g. current Macbooks and iMacs). Because they do not support Vulkan, OpenGL is enabled. In the future, I hope to solve for Mac's deprecated OpenGL subsystem by either supporting MoltenVK or Metal, directly.
 
