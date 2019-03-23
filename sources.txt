@@ -1,4 +1,9 @@
-Sources:
+Following are the sources for some of the included scripts and shaders:
 
+SCRIPTS
 auto-profiles.lua
 https://github.com/wiiaboo/mpv-scripts
+
+SHADERS
+FSRCNNX_x2_8-0-4-1.glsl
+https://github.com/igv/FSRCNN-TensorFlow
