@@ -1,0 +1,4 @@
+Sources:
+
+auto-profiles.lua
+https://github.com/wiiaboo/mpv-scripts
