@@ -209,7 +209,7 @@ vec4 hook() {
 
     vec3 Sl = abs(avg[0].rgb - pow(M_texOff(0).rgb, vec3(2.0)));
     vec3 Sh = abs(avg[1].rgb - pow(M_texOff(0).rgb, vec3(2.0)));
-    return vec4(mix(vec3(0), 1.0 / (1.0 + sqrt(Sh / Sl)), lessThan(vec3(0), Sl)), 0.0);
+    return vec4(mix(vec3(0), 1.0 / (1.0 + sqrt(Sh / Sl)), lessThan(vec3(1e-9), Sl)), 0.0);
 }
 
 //!HOOK POSTKERNEL

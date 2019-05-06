@@ -21,7 +21,7 @@
 //!WHEN CHROMA.w LUMA.w <
 //!DESC KrigBilateral Downscaling Y pass 1
 
-#define offset      (-vec2(0.0, 0.0)*LUMA_size*CHROMA_pt)
+#define lumaOffset  (-vec2(0.0, 0.0)*LUMA_size*CHROMA_pt)
 
 #define factor      ((LUMA_pt*CHROMA_size.x)[axis])
 
@@ -31,8 +31,8 @@
 
 vec4 hook() {
     // Calculate bounds
-    float low  = floor((LUMA_pos - CHROMA_pt) * LUMA_size - offset + 0.5)[axis];
-    float high = floor((LUMA_pos + CHROMA_pt) * LUMA_size - offset + 0.5)[axis];
+    float low  = floor((LUMA_pos - CHROMA_pt) * LUMA_size - lumaOffset + 0.5)[axis];
+    float high = floor((LUMA_pos + CHROMA_pt) * LUMA_size - lumaOffset + 0.5)[axis];
 
     float W = 0.0;
     vec4 avg = vec4(0);
@@ -40,10 +40,10 @@ vec4 hook() {
 
     for (float k = 0.0; k < high - low; k++) {
         pos[axis] = LUMA_pt[axis] * (k + low + 0.5);
-        float rel = (pos[axis] - LUMA_pos[axis])*CHROMA_size[axis] + offset[axis]*factor;
+        float rel = (pos[axis] - LUMA_pos[axis])*CHROMA_size[axis] + lumaOffset[axis]*factor;
         float w = Kernel(rel);
 
-        vec4 y = textureLod(LUMA_raw, pos, 0.0).xxxx * LUMA_mul;
+        vec4 y = (textureLod(LUMA_raw, pos, 0.0).xxxx * LUMA_mul - 16./255.) / (219./255.);
         y.y *= y.y;
         avg += w * y;
         W += w;
@@ -60,7 +60,7 @@ vec4 hook() {
 //!WHEN CHROMA.h LUMA.h <
 //!DESC KrigBilateral Downscaling Y pass 2
 
-#define offset      (-vec2(0.0, 0.0)*LOWRES_Y_size*CHROMA_pt)
+#define lumaOffset  (-vec2(0.0, 0.0)*LOWRES_Y_size*CHROMA_pt)
 
 #define factor      ((LOWRES_Y_pt*CHROMA_size)[axis])
 
@@ -70,8 +70,8 @@ vec4 hook() {
 
 vec4 hook() {
     // Calculate bounds
-    float low  = floor((LOWRES_Y_pos - CHROMA_pt) * LOWRES_Y_size - offset + 0.5)[axis];
-    float high = floor((LOWRES_Y_pos + CHROMA_pt) * LOWRES_Y_size - offset + 0.5)[axis];
+    float low  = floor((LOWRES_Y_pos - CHROMA_pt) * LOWRES_Y_size - lumaOffset + 0.5)[axis];
+    float high = floor((LOWRES_Y_pos + CHROMA_pt) * LOWRES_Y_size - lumaOffset + 0.5)[axis];
 
     float W = 0.0;
     vec4 avg = vec4(0);
@@ -79,7 +79,7 @@ vec4 hook() {
 
     for (float k = 0.0; k < high - low; k++) {
         pos[axis] = LOWRES_Y_pt[axis] * (k + low + 0.5);
-        float rel = (pos[axis] - LOWRES_Y_pos[axis])*CHROMA_size[axis] + offset[axis]*factor;
+        float rel = (pos[axis] - LOWRES_Y_pos[axis])*CHROMA_size[axis] + lumaOffset[axis]*factor;
         float w = Kernel(rel);
 
         vec4 y = textureLod(LOWRES_Y_raw, pos, 0.0).xxxx * LOWRES_Y_mul;
@@ -99,9 +99,10 @@ vec4 hook() {
 //!WIDTH LUMA.w
 //!HEIGHT LUMA.h
 //!WHEN CHROMA.w LUMA.w <
+//!OFFSET -0.5 0
 //!DESC KrigBilateral Upscaling UV
 
-#define locality 5.0
+#define locality 10.0
 
 // -- Convenience --
 #define sqr(x)   dot(x,x)
@@ -145,6 +146,7 @@ vec4 hook() {
     for (int i=0; i<N+1; i++) {
         y += LUMA_texOff(coords[i]).x * pow(1.0/locality, float(sqr(coords[i])));
         X[i] = vec4(GetY(coords[i]), GetUV(coords[i]));
+        X[i].x = X[i].x * 219./255. + 16./255.;
         vec2 w = clamp(1.5 - abs(coords[i] - offset), 0.0, 1.0);
         total += w.x*w.y*vec4(X[i].x, pow(X[i].x, 2.0), X[i].y, 1.0);
     }
