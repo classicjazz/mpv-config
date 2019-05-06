@@ -1,4 +1,5 @@
 //!HOOK LUMA
+//!HOOK RGB
 //!BIND HOOKED
 
 // Change this to tune the strength of the noise
