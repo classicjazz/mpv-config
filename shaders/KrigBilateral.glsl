@@ -43,7 +43,7 @@ vec4 hook() {
         float rel = (pos[axis] - LUMA_pos[axis])*CHROMA_size[axis] + lumaOffset[axis]*factor;
         float w = Kernel(rel);
 
-        vec4 y = (textureLod(LUMA_raw, pos, 0.0).xxxx * LUMA_mul - 16./255.) / (219./255.);
+        vec4 y = textureLod(LUMA_raw, pos, 0.0).xxxx * LUMA_mul;
         y.y *= y.y;
         avg += w * y;
         W += w;
@@ -146,7 +146,6 @@ vec4 hook() {
     for (int i=0; i<N+1; i++) {
         y += LUMA_texOff(coords[i]).x * pow(1.0/locality, float(sqr(coords[i])));
         X[i] = vec4(GetY(coords[i]), GetUV(coords[i]));
-        X[i].x = X[i].x * 219./255. + 16./255.;
         vec2 w = clamp(1.5 - abs(coords[i] - offset), 0.0, 1.0);
         total += w.x*w.y*vec4(X[i].x, pow(X[i].x, 2.0), X[i].y, 1.0);
     }

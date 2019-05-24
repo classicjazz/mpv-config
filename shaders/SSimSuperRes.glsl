@@ -13,8 +13,6 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library.
 
-//To make it sharper use Mitchell params instead of Catmull-Rom (1.0/3.0, 1.0/3.0 instead of 0.0, 0.5), another less preferable option is to decrease locality. Usage: glsl-shaders="~~/SSimSuperRes.glsl" 
-
 //!HOOK POSTKERNEL
 //!BIND HOOKED
 //!SAVE LOWRES

@@ -19,6 +19,7 @@
 //!SAVE L2
 //!HEIGHT NATIVE_CROPPED.h
 //!WHEN NATIVE_CROPPED.w POSTKERNEL.w >
+//!COMPONENTS 3
 //!DESC SSimDownscaler calc L2 pass 1
 
 #define factor      ((input_size*POSTKERNEL_pt)[axis])
@@ -47,7 +48,7 @@ vec4 hook() {
         float rel = (pos[axis] - base[axis])*POSTKERNEL_size[axis] + offset[axis]*factor;
         float w = Kernel(rel);
 
-        avg += w * pow(textureLod(PREKERNEL_raw, pos, 0.0) * PREKERNEL_mul, vec4(2.0));
+        avg += w * pow(clamp(textureLod(PREKERNEL_raw, pos, 0.0) * PREKERNEL_mul, 0.0, 1.0), vec4(2.0));
         W += w;
     }
     avg /= W;
@@ -60,6 +61,7 @@ vec4 hook() {
 //!BIND L2
 //!SAVE L2
 //!WHEN NATIVE_CROPPED.h POSTKERNEL.h >
+//!COMPONENTS 3
 //!DESC SSimDownscaler calc L2 pass 2
 
 #define factor      ((L2_size*POSTKERNEL_pt)[axis])
@@ -91,13 +93,14 @@ vec4 hook() {
     }
     avg /= W;
 
-    return clamp(avg, 0.0, 1.0);
+    return avg;
 }
 
 //!HOOK POSTKERNEL
 //!BIND HOOKED
 //!SAVE M
 //!WHEN NATIVE_CROPPED.w POSTKERNEL.w >
+//!COMPONENTS 3
 //!DESC SSimDownscaler calc Mean
 
 #define locality    8.0
@@ -157,6 +160,7 @@ vec4 hook() {
 //!BIND M
 //!SAVE R
 //!WHEN NATIVE_CROPPED.w POSTKERNEL.w >
+//!COMPONENTS 3
 //!DESC SSimDownscaler calc R
 
 #define locality    8.0
@@ -209,7 +213,7 @@ vec4 hook() {
 
     vec3 Sl = abs(avg[0].rgb - pow(M_texOff(0).rgb, vec3(2.0)));
     vec3 Sh = abs(avg[1].rgb - pow(M_texOff(0).rgb, vec3(2.0)));
-    return vec4(mix(vec3(0), 1.0 / (1.0 + sqrt(Sh / Sl)), lessThan(vec3(1e-9), Sl)), 0.0);
+    return vec4(mix(vec3(0.5), 1.0 / (1.0 + sqrt(Sh / Sl)), lessThan(vec3(5e-6), Sl)), 0.0);
 }
 
 //!HOOK POSTKERNEL
@@ -244,7 +248,7 @@ mat3x3 ScaleH(vec2 pos) {
         float w = Kernel(rel);
         vec3 M = Gamma(M_tex(pos).rgb);
         vec3 R = R_tex(pos).rgb;
-        R = mix(vec3(0), 1.0 / R - 1.0, lessThan(vec3(0), R));
+        R = 1.0 / R - 1.0;
         avg += w * mat3x3(R*M, M, R);
         W += w;
     }
