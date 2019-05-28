@@ -17,33 +17,31 @@
 //!BIND HOOKED
 //!BIND LUMA
 //!SAVE LOWRES_Y
-//!HEIGHT LUMA.h
+//!WIDTH LUMA.w
 //!WHEN CHROMA.w LUMA.w <
 //!DESC KrigBilateral Downscaling Y pass 1
 
 #define lumaOffset  (-vec2(0.0, 0.0)*LUMA_size*CHROMA_pt)
 
-#define factor      ((LUMA_pt*CHROMA_size.x)[axis])
+#define axis 1
 
-#define axis 0
-
-#define Kernel(x)   dot(vec4(0.355768, -0.487396, 0.144232, -0.012604), cos(vec4(0.,1.,2.,3.)*acos(-1.0)*(x+1.)))
+#define Kernel(x)   dot(vec3(0.42659, -0.49656, 0.076849), cos(vec3(0, 1, 2) * acos(-1.) * (x + 1.)))
 
 vec4 hook() {
     // Calculate bounds
-    float low  = floor((LUMA_pos - CHROMA_pt) * LUMA_size - lumaOffset + 0.5)[axis];
-    float high = floor((LUMA_pos + CHROMA_pt) * LUMA_size - lumaOffset + 0.5)[axis];
+    float low  = ceil((LUMA_pos - CHROMA_pt) * LUMA_size - lumaOffset - 0.5)[axis];
+    float high = floor((LUMA_pos + CHROMA_pt) * LUMA_size - lumaOffset - 0.5)[axis];
 
     float W = 0.0;
     vec4 avg = vec4(0);
     vec2 pos = LUMA_pos;
 
-    for (float k = 0.0; k < high - low; k++) {
-        pos[axis] = LUMA_pt[axis] * (k + low + 0.5);
-        float rel = (pos[axis] - LUMA_pos[axis])*CHROMA_size[axis] + lumaOffset[axis]*factor;
+    for (float k = low; k <= high; k++) {
+        pos[axis] = LUMA_pt[axis] * (k - lumaOffset[axis] + 0.5);
+        float rel = (pos[axis] - LUMA_pos[axis])*CHROMA_size[axis];
         float w = Kernel(rel);
 
-        vec4 y = textureLod(LUMA_raw, pos, 0.0).xxxx * LUMA_mul;
+        vec4 y = textureGrad(LUMA_raw, pos, vec2(0.0), vec2(0.0)).xxxx * LUMA_mul;
         y.y *= y.y;
         avg += w * y;
         W += w;
@@ -57,32 +55,30 @@ vec4 hook() {
 //!BIND HOOKED
 //!BIND LOWRES_Y
 //!SAVE LOWRES_Y
-//!WHEN CHROMA.h LUMA.h <
+//!WHEN CHROMA.w LUMA.w <
 //!DESC KrigBilateral Downscaling Y pass 2
 
 #define lumaOffset  (-vec2(0.0, 0.0)*LOWRES_Y_size*CHROMA_pt)
 
-#define factor      ((LOWRES_Y_pt*CHROMA_size)[axis])
+#define axis 0
 
-#define axis 1
-
-#define Kernel(x)   dot(vec4(0.355768, -0.487396, 0.144232, -0.012604), cos(vec4(0.,1.,2.,3.)*acos(-1.0)*(x+1.)))
+#define Kernel(x)   dot(vec3(0.42659, -0.49656, 0.076849), cos(vec3(0, 1, 2) * acos(-1.) * (x + 1.)))
 
 vec4 hook() {
     // Calculate bounds
-    float low  = floor((LOWRES_Y_pos - CHROMA_pt) * LOWRES_Y_size - lumaOffset + 0.5)[axis];
-    float high = floor((LOWRES_Y_pos + CHROMA_pt) * LOWRES_Y_size - lumaOffset + 0.5)[axis];
+    float low  = ceil((LOWRES_Y_pos - CHROMA_pt) * LOWRES_Y_size - lumaOffset - 0.5)[axis];
+    float high = floor((LOWRES_Y_pos + CHROMA_pt) * LOWRES_Y_size - lumaOffset - 0.5)[axis];
 
     float W = 0.0;
     vec4 avg = vec4(0);
     vec2 pos = LOWRES_Y_pos;
 
-    for (float k = 0.0; k < high - low; k++) {
-        pos[axis] = LOWRES_Y_pt[axis] * (k + low + 0.5);
-        float rel = (pos[axis] - LOWRES_Y_pos[axis])*CHROMA_size[axis] + lumaOffset[axis]*factor;
+    for (float k = low; k <= high; k++) {
+        pos[axis] = LOWRES_Y_pt[axis] * (k - lumaOffset[axis] + 0.5);
+        float rel = (pos[axis] - LOWRES_Y_pos[axis])*CHROMA_size[axis];
         float w = Kernel(rel);
 
-        vec4 y = textureLod(LOWRES_Y_raw, pos, 0.0).xxxx * LOWRES_Y_mul;
+        vec4 y = textureGrad(LOWRES_Y_raw, pos, vec2(0.0), vec2(0.0)).xxxx * LOWRES_Y_mul;
         y.y *= y.y;
         avg += w * y;
         W += w;
@@ -99,10 +95,8 @@ vec4 hook() {
 //!WIDTH LUMA.w
 //!HEIGHT LUMA.h
 //!WHEN CHROMA.w LUMA.w <
-//!OFFSET -0.5 0
+//!OFFSET ALIGN
 //!DESC KrigBilateral Upscaling UV
-
-#define locality 10.0
 
 // -- Convenience --
 #define sqr(x)   dot(x,x)
@@ -130,13 +124,13 @@ vec4 hook() {
 #define c(i)   (inversesqrt(1.0 + X[i].y/localVar) * exp(-0.5*(sqr(X[i].x - y)/(localVar + X[i].y) + sqr((coords[i] - offset)/radius))))
 
 vec4 hook() {
-    vec2 pos = LUMA_pos * LOWRES_Y_size - chromaOffset - vec2(0.5);
+    vec2 pos = CHROMA_pos * HOOKED_size - chromaOffset - vec2(0.5);
     vec2 offset = pos - (even ? floor(pos) : round(pos));
     pos -= offset;
 
     vec2 coords[N+1];
     vec4 X[N+1];
-    float y = 0.0;
+    float y = LUMA_texOff(0).x;
     vec4 total = vec4(0);
 
     coords[0] = vec2(-1,-1); coords[1] = vec2(-1, 0); coords[2] = vec2(-1, 1);
@@ -144,12 +138,10 @@ vec4 hook() {
     coords[6] = vec2( 1, 0); coords[7] = vec2( 1, 1); coords[8] = vec2( 0, 0);
 
     for (int i=0; i<N+1; i++) {
-        y += LUMA_texOff(coords[i]).x * pow(1.0/locality, float(sqr(coords[i])));
         X[i] = vec4(GetY(coords[i]), GetUV(coords[i]));
         vec2 w = clamp(1.5 - abs(coords[i] - offset), 0.0, 1.0);
         total += w.x*w.y*vec4(X[i].x, pow(X[i].x, 2.0), X[i].y, 1.0);
     }
-    y /= (1.0 + 4.0/locality + 4.0/pow(locality, 2.0));
     total.xyz /= total.w;
     float localVar = sqr(noise) + abs(total.y - pow(total.x, 2.0)) + total.z;
     float radius = 1.0;
@@ -202,18 +194,36 @@ vec4 hook() {
 
     b[7] -= b[6] * M(7, 6) / M(6, 6); M(7, 7) -= M(6, 7) * M(7, 6) / M(6, 6);
 
-    for (int i=0; i<N; i++) {
-        if(i > 6) b[N-1-i] -= M(N-1-i, 1) * b[1];
-        if(i > 5) b[N-1-i] -= M(N-1-i, 2) * b[2];
-        if(i > 4) b[N-1-i] -= M(N-1-i, 3) * b[3];
-        if(i > 3) b[N-1-i] -= M(N-1-i, 4) * b[4];
-        if(i > 2) b[N-1-i] -= M(N-1-i, 5) * b[5];
-        if(i > 1) b[N-1-i] -= M(N-1-i, 6) * b[6];
-        if(i > 0) b[N-1-i] -= M(N-1-i, 7) * b[7];
+    b[N-1-0] /= M(N-1-0, N-1-0);
+    interp += b[N-1-0] * (X[N-1-0] - X[N]);
 
-        b[N-1-i] /= M(N-1-i, N-1-i);
-        interp += b[N-1-i] * (X[N-1-i] - X[N]);
-    }
+    b[N-1-1] -= M(N-1-1, 7) * b[7];
+    b[N-1-1] /= M(N-1-1, N-1-1);
+    interp += b[N-1-1] * (X[N-1-1] - X[N]);
+
+    b[N-1-2] -= M(N-1-2, 6) * b[6]; b[N-1-2] -= M(N-1-2, 7) * b[7];
+    b[N-1-2] /= M(N-1-2, N-1-2);
+    interp += b[N-1-2] * (X[N-1-2] - X[N]);
+
+    b[N-1-3] -= M(N-1-3, 5) * b[5]; b[N-1-3] -= M(N-1-3, 6) * b[6]; b[N-1-3] -= M(N-1-3, 7) * b[7];
+    b[N-1-3] /= M(N-1-3, N-1-3);
+    interp += b[N-1-3] * (X[N-1-3] - X[N]);
+
+    b[N-1-4] -= M(N-1-4, 4) * b[4]; b[N-1-4] -= M(N-1-4, 5) * b[5]; b[N-1-4] -= M(N-1-4, 6) * b[6]; b[N-1-4] -= M(N-1-4, 7) * b[7];
+    b[N-1-4] /= M(N-1-4, N-1-4);
+    interp += b[N-1-4] * (X[N-1-4] - X[N]);
+
+    b[N-1-5] -= M(N-1-5, 3) * b[3]; b[N-1-5] -= M(N-1-5, 4) * b[4]; b[N-1-5] -= M(N-1-5, 5) * b[5]; b[N-1-5] -= M(N-1-5, 6) * b[6]; b[N-1-5] -= M(N-1-5, 7) * b[7];
+    b[N-1-5] /= M(N-1-5, N-1-5);
+    interp += b[N-1-5] * (X[N-1-5] - X[N]);
+
+    b[N-1-6] -= M(N-1-6, 2) * b[2]; b[N-1-6] -= M(N-1-6, 3) * b[3]; b[N-1-6] -= M(N-1-6, 4) * b[4]; b[N-1-6] -= M(N-1-6, 5) * b[5]; b[N-1-6] -= M(N-1-6, 6) * b[6]; b[N-1-6] -= M(N-1-6, 7) * b[7];
+    b[N-1-6] /= M(N-1-6, N-1-6);
+    interp += b[N-1-6] * (X[N-1-6] - X[N]);
+
+    b[N-1-7] -= M(N-1-7, 1) * b[1]; b[N-1-7] -= M(N-1-7, 2) * b[2]; b[N-1-7] -= M(N-1-7, 3) * b[3]; b[N-1-7] -= M(N-1-7, 4) * b[4]; b[N-1-7] -= M(N-1-7, 5) * b[5]; b[N-1-7] -= M(N-1-7, 6) * b[6]; b[N-1-7] -= M(N-1-7, 7) * b[7];
+    b[N-1-7] /= M(N-1-7, N-1-7);
+    interp += b[N-1-7] * (X[N-1-7] - X[N]);
 
     return interp.zwxx;
 }
