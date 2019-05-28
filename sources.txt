@@ -6,6 +6,7 @@ https://github.com/wiiaboo/mpv-scripts
 
 SHADERS
 FSRCNNX_x2_8-0-4-1.glsl
+FSRCNNX_x2_16-0-4-1.glsl
 https://github.com/igv/FSRCNN-TensorFlow
 FSRCNN extended with local residual learning and recursive blocks with pre-activation structure.
 
