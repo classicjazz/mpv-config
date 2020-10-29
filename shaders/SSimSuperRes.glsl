@@ -1,3 +1,5 @@
+// Revised 07/03/20
+//
 // SSimSuperRes by Shiandow
 //
 // This library is free software; you can redistribute it and/or
@@ -16,19 +18,17 @@
 //!HOOK POSTKERNEL
 //!BIND HOOKED
 //!SAVE LOWRES
-//!WIDTH NATIVE_CROPPED.w
-//!WHEN NATIVE_CROPPED.w OUTPUT.w <
+//!HEIGHT NATIVE_CROPPED.h
+//!WHEN NATIVE_CROPPED.h OUTPUT.h <
 //!COMPONENTS 4
 //!DESC SSSR Downscaling I
 
-#define factor      ((HOOKED_pt*input_size)[axis])
-
-#define axis 0
+#define axis 1
 
 #define offset      vec2(0,0)
 
-#define MN(B,C,x)   (x <= 1.0 ? ((2.-1.5*B-C)*x + (-3.+2.*B+C))*x*x + (1.-B/3.) : (((-B/6.-C)*x + (B+5.*C))*x + (-2.*B-8.*C))*x+((4./3.)*B+4.*C))
-#define Kernel(x)   MN(0.0, 0.5, abs(x))
+#define MN(B,C,x)   (x < 1.0 ? ((2.-1.5*B-(C))*x + (-3.+2.*B+C))*x*x + (1.-(B)/3.) : (((-(B)/6.-(C))*x + (B+5.*C))*x + (-2.*B-8.*C))*x+((4./3.)*B+4.*C))
+#define Kernel(x)   MN(0.334, 0.333, abs(x))
 #define taps        2.0
 
 #define Kb 0.0722
@@ -37,17 +37,17 @@
 
 vec4 hook() {
     // Calculate bounds
-    float low  = floor((HOOKED_pos - taps/input_size) * HOOKED_size - offset + 0.5)[axis];
-    float high = floor((HOOKED_pos + taps/input_size) * HOOKED_size - offset + 0.5)[axis];
+    float low  = ceil((HOOKED_pos - taps/input_size) * HOOKED_size - offset - 0.5)[axis];
+    float high = floor((HOOKED_pos + taps/input_size) * HOOKED_size - offset - 0.5)[axis];
 
     float W = 0.0;
     vec4 avg = vec4(0);
     vec2 pos = HOOKED_pos;
     vec4 tex;
 
-    for (float k = 0.0; k < high - low; k++) {
-        pos[axis] = HOOKED_pt[axis] * (k + low + 0.5);
-        float rel = (pos[axis] - HOOKED_pos[axis])*input_size[axis] + offset[axis]*factor;
+    for (float k = low; k <= high; k++) {
+        pos[axis] = HOOKED_pt[axis] * (k - offset[axis] + 0.5);
+        float rel = (pos[axis] - HOOKED_pos[axis])*input_size[axis];
         float w = Kernel(rel);
 
         tex.rgb = textureLod(HOOKED_raw, pos, 0.0).rgb * HOOKED_mul;
@@ -65,18 +65,16 @@ vec4 hook() {
 //!SAVE LOWRES
 //!WIDTH NATIVE_CROPPED.w
 //!HEIGHT NATIVE_CROPPED.h
-//!WHEN NATIVE_CROPPED.h OUTPUT.h <
+//!WHEN NATIVE_CROPPED.w OUTPUT.w <
 //!COMPONENTS 4
 //!DESC SSSR Downscaling II
 
-#define factor      ((LOWRES_pt*input_size)[axis])
-
-#define axis 1
+#define axis 0
 
 #define offset      vec2(0,0)
 
-#define MN(B,C,x)   (x <= 1.0 ? ((2.-1.5*B-C)*x + (-3.+2.*B+C))*x*x + (1.-B/3.) : (((-B/6.-C)*x + (B+5.*C))*x + (-2.*B-8.*C))*x+((4./3.)*B+4.*C))
-#define Kernel(x)   MN(0.0, 0.5, abs(x))
+#define MN(B,C,x)   (x < 1.0 ? ((2.-1.5*B-(C))*x + (-3.+2.*B+C))*x*x + (1.-(B)/3.) : (((-(B)/6.-(C))*x + (B+5.*C))*x + (-2.*B-8.*C))*x+((4./3.)*B+4.*C))
+#define Kernel(x)   MN(0.334, 0.333, abs(x))
 #define taps        2.0
 
 #define Kb 0.0722
@@ -85,17 +83,17 @@ vec4 hook() {
 
 vec4 hook() {
     // Calculate bounds
-    float low  = floor((LOWRES_pos - taps/input_size) * LOWRES_size - offset + 0.5)[axis];
-    float high = floor((LOWRES_pos + taps/input_size) * LOWRES_size - offset + 0.5)[axis];
+    float low  = ceil((LOWRES_pos - taps/input_size) * LOWRES_size - offset - 0.5)[axis];
+    float high = floor((LOWRES_pos + taps/input_size) * LOWRES_size - offset - 0.5)[axis];
 
     float W = 0.0;
     vec4 avg = vec4(0);
     vec2 pos = LOWRES_pos;
     vec4 tex;
 
-    for (float k = 0.0; k < high - low; k++) {
-        pos[axis] = LOWRES_pt[axis] * (k + low + 0.5);
-        float rel = (pos[axis] - LOWRES_pos[axis])*input_size[axis] + offset[axis]*factor;
+    for (float k = low; k <= high; k++) {
+        pos[axis] = LOWRES_pt[axis] * (k - offset[axis] + 0.5);
+        float rel = (pos[axis] - LOWRES_pos[axis])*input_size[axis];
         float w = Kernel(rel);
 
         tex.rgb = textureLod(LOWRES_raw, pos, 0.0).rgb * LOWRES_mul;
@@ -110,12 +108,12 @@ vec4 hook() {
 
 //!HOOK POSTKERNEL
 //!BIND PREKERNEL
-//!SAVE mL
+//!SAVE varL
 //!WIDTH NATIVE_CROPPED.w
 //!HEIGHT NATIVE_CROPPED.h
-//!WHEN NATIVE_CROPPED.w OUTPUT.w <
+//!WHEN NATIVE_CROPPED.h OUTPUT.h <
 //!COMPONENTS 4
-//!DESC SSSR meanL & var
+//!DESC SSSR varL
 
 #define spread      1.0 / 1000.0
 
@@ -142,20 +140,19 @@ vec4 hook() {
     }
     varL /= (spread + 4.0*spread + 4.0*spread*spread);
 
-    return vec4((meanL), varL);
+    return vec4(GetL(0,0), varL);
 }
 
 //!HOOK POSTKERNEL
 //!BIND LOWRES
-//!SAVE mH
+//!SAVE varH
 //!WIDTH NATIVE_CROPPED.w
 //!HEIGHT NATIVE_CROPPED.h
-//!WHEN NATIVE_CROPPED.w OUTPUT.w <
-//!COMPONENTS 4
-//!DESC SSSR meanH & var
+//!WHEN NATIVE_CROPPED.h OUTPUT.h <
+//!COMPONENTS 1
+//!DESC SSSR varH
 
-#define locality    1000.0
-#define spread      1.0 / locality
+#define spread      1.0 / 1000.0
 
 #define sqr(x)      pow(x, 2.0)
 #define GetH(x,y)   LOWRES_texOff(vec2(x,y)).rgb
@@ -180,15 +177,15 @@ vec4 hook() {
     }
     varH /= (spread + 4.0*spread + 4.0*spread*spread);
 
-    return vec4((meanH.rgb), varH);
+    return vec4(varH, 0, 0, 0);
 }
 
 //!HOOK POSTKERNEL
 //!BIND HOOKED
 //!BIND LOWRES
-//!BIND mL
-//!BIND mH
-//!WHEN NATIVE_CROPPED.w OUTPUT.w <
+//!BIND varL
+//!BIND varH
+//!WHEN NATIVE_CROPPED.h OUTPUT.h <
 //!DESC SSSR final pass
 
 // -- Window Size --
@@ -203,8 +200,8 @@ vec4 hook() {
 #define sqr(x)      dot(x,x)
 
 // -- Input processing --
-#define meanL(x,y)  ( mL_tex(mL_pt*(pos+vec2(x,y)+0.5)) )
-#define meanH(x,y)  ( mH_tex(mH_pt*(pos+vec2(x,y)+0.5)) )
+#define L(x,y)      ( varL_tex(varL_pt*(pos+vec2(x,y)+0.5)) )
+#define H(x,y)      ( varH_tex(varH_pt*(pos+vec2(x,y)+0.5)) )
 #define Lowres(x,y) ( LOWRES_tex(LOWRES_pt*(pos+vec2(x,y)+0.5)) )
 
 #define Gamma(x)    ( pow(clamp(x, 0.0, 1.0), vec3(1.0/2.0)) )
@@ -236,15 +233,14 @@ vec4 hook() {
     for (int X = minX; X <= maxX; X++)
     for (int Y = minX; Y <= maxX; Y++)
     {
-        vec4 l = meanL(X,Y);
-        vec4 h = meanH(X,Y);
-        float R = -sqrt((l.a + sqr(0.5/255.0)) / (h.a + mVar.r + sqr(0.5/255.0)));
-        float Var = Lowres(X,Y).a;
+        float varL = L(X,Y).a;
+        float varH = H(X,Y).r;
+        float R = -sqrt((varL + sqr(0.5/255.0)) / (varH + mVar.r + sqr(0.5/255.0)));
 
         vec2 krnl = Kernel(vec2(X,Y) - offset);
-        float weight = krnl.r * krnl.g / (Luma(c0.rgb - Lowres(X,Y).rgb) + Var + sqr(0.5/255.0));
+        float weight = krnl.r * krnl.g / (Luma(c0.rgb - Lowres(X,Y).rgb) + Lowres(X,Y).a + sqr(0.5/255.0));
 
-        diff += weight * (l.rgb + h.rgb * R + (-1.0 - R) * (c0.rgb));
+        diff += weight * (L(X,Y).rgb + Lowres(X,Y).rgb * R + (-1.0 - R) * (c0.rgb));
         weightSum += weight;
     }
     diff /= weightSum;

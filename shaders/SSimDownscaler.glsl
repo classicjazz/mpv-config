@@ -1,3 +1,5 @@
+// Revised 07/03/20
+//
 // SSimDownscaler by Shiandow
 //
 // This library is free software; you can redistribute it and/or
