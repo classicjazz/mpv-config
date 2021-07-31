@@ -19,18 +19,16 @@
 //!BIND HOOKED
 //!BIND PREKERNEL
 //!SAVE L2
-//!HEIGHT NATIVE_CROPPED.h
-//!WHEN NATIVE_CROPPED.w POSTKERNEL.w >
+//!WIDTH NATIVE_CROPPED.w
+//!WHEN NATIVE_CROPPED.h POSTKERNEL.h >
 //!COMPONENTS 3
 //!DESC SSimDownscaler calc L2 pass 1
 
-#define factor      ((input_size*POSTKERNEL_pt)[axis])
-
-#define axis 0
+#define axis 1
 
 #define offset      vec2(0,0)
 
-#define MN(B,C,x)   (x <= 1.0 ? ((2.-1.5*B-C)*x + (-3.+2.*B+C))*x*x + (1.-B/3.) : (((-B/6.-C)*x + (B+5.*C))*x + (-2.*B-8.*C))*x+((4./3.)*B+4.*C))
+#define MN(B,C,x)   (x < 1.0 ? ((2.-1.5*B-(C))*x + (-3.+2.*B+C))*x*x + (1.-(B)/3.) : (((-(B)/6.-(C))*x + (B+5.*C))*x + (-2.*B-8.*C))*x+((4./3.)*B+4.*C))
 #define Kernel(x)   MN(1.0/3.0, 1.0/3.0, abs(x))
 #define taps        2.0
 
@@ -38,16 +36,16 @@ vec4 hook() {
     vec2 base = PREKERNEL_pt * (PREKERNEL_pos * input_size + tex_offset);
 
     // Calculate bounds
-    float low  = floor((PREKERNEL_pos - taps*POSTKERNEL_pt) * input_size - offset + tex_offset + 0.5)[axis];
-    float high = floor((PREKERNEL_pos + taps*POSTKERNEL_pt) * input_size - offset + tex_offset + 0.5)[axis];
+    float low  = ceil((PREKERNEL_pos - taps*POSTKERNEL_pt) * input_size - offset + tex_offset - 0.5)[axis];
+    float high = floor((PREKERNEL_pos + taps*POSTKERNEL_pt) * input_size - offset + tex_offset - 0.5)[axis];
 
     float W = 0.0;
     vec4 avg = vec4(0);
     vec2 pos = base;
 
-    for (float k = 0.0; k < high - low; k++) {
-        pos[axis] = PREKERNEL_pt[axis] * (k + low + 0.5);
-        float rel = (pos[axis] - base[axis])*POSTKERNEL_size[axis] + offset[axis]*factor;
+    for (float k = low; k <= high; k++) {
+        pos[axis] = PREKERNEL_pt[axis] * (k - offset[axis] + 0.5);
+        float rel = (pos[axis] - base[axis])*POSTKERNEL_size[axis];
         float w = Kernel(rel);
 
         avg += w * pow(clamp(textureLod(PREKERNEL_raw, pos, 0.0) * PREKERNEL_mul, 0.0, 1.0), vec4(2.0));
@@ -62,32 +60,30 @@ vec4 hook() {
 //!BIND HOOKED
 //!BIND L2
 //!SAVE L2
-//!WHEN NATIVE_CROPPED.h POSTKERNEL.h >
+//!WHEN NATIVE_CROPPED.w POSTKERNEL.w >
 //!COMPONENTS 3
 //!DESC SSimDownscaler calc L2 pass 2
 
-#define factor      ((L2_size*POSTKERNEL_pt)[axis])
-
-#define axis 1
+#define axis 0
 
 #define offset      vec2(0,0)
 
-#define MN(B,C,x)   (x <= 1.0 ? ((2.-1.5*B-C)*x + (-3.+2.*B+C))*x*x + (1.-B/3.) : (((-B/6.-C)*x + (B+5.*C))*x + (-2.*B-8.*C))*x+((4./3.)*B+4.*C))
+#define MN(B,C,x)   (x < 1.0 ? ((2.-1.5*B-(C))*x + (-3.+2.*B+C))*x*x + (1.-(B)/3.) : (((-(B)/6.-(C))*x + (B+5.*C))*x + (-2.*B-8.*C))*x+((4./3.)*B+4.*C))
 #define Kernel(x)   MN(1.0/3.0, 1.0/3.0, abs(x))
 #define taps        2.0
 
 vec4 hook() {
     // Calculate bounds
-    float low  = floor((L2_pos - taps*POSTKERNEL_pt) * L2_size - offset + 0.5)[axis];
-    float high = floor((L2_pos + taps*POSTKERNEL_pt) * L2_size - offset + 0.5)[axis];
+    float low  = ceil((L2_pos - taps*POSTKERNEL_pt) * L2_size - offset - 0.5)[axis];
+    float high = floor((L2_pos + taps*POSTKERNEL_pt) * L2_size - offset - 0.5)[axis];
 
     float W = 0.0;
     vec4 avg = vec4(0);
     vec2 pos = L2_pos;
 
-    for (float k = 0.0; k < high - low; k++) {
-        pos[axis] = L2_pt[axis] * (k + low + 0.5);
-        float rel = (pos[axis] - L2_pos[axis])*POSTKERNEL_size[axis] + offset[axis]*factor;
+    for (float k = low; k <= high; k++) {
+        pos[axis] = L2_pt[axis] * (k - offset[axis] + 0.5);
+        float rel = (pos[axis] - L2_pos[axis])*POSTKERNEL_size[axis];
         float w = Kernel(rel);
 
         avg += w * textureLod(L2_raw, pos, 0.0) * L2_mul;
@@ -101,7 +97,7 @@ vec4 hook() {
 //!HOOK POSTKERNEL
 //!BIND HOOKED
 //!SAVE M
-//!WHEN NATIVE_CROPPED.w POSTKERNEL.w >
+//!WHEN NATIVE_CROPPED.h POSTKERNEL.h >
 //!COMPONENTS 3
 //!DESC SSimDownscaler calc Mean
 
@@ -161,7 +157,7 @@ vec4 hook() {
 //!BIND L2
 //!BIND M
 //!SAVE R
-//!WHEN NATIVE_CROPPED.w POSTKERNEL.w >
+//!WHEN NATIVE_CROPPED.h POSTKERNEL.h >
 //!COMPONENTS 3
 //!DESC SSimDownscaler calc R
 
@@ -222,7 +218,7 @@ vec4 hook() {
 //!BIND HOOKED
 //!BIND M
 //!BIND R
-//!WHEN NATIVE_CROPPED.w POSTKERNEL.w >
+//!WHEN NATIVE_CROPPED.h POSTKERNEL.h >
 //!DESC SSimDownscaler final pass
 
 #define locality    8.0
