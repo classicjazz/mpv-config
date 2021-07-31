@@ -5,15 +5,17 @@ auto-profiles.lua
 https://github.com/wiiaboo/mpv-scripts
 
 SHADERS
-FSRCNNX_x2_8-0-4-1.glsl
-FSRCNNX_x2_16-0-4-1.glsl
+adaptive-sharpen.glsl (11/14/20)
+https://gist.github.com/igv/8a77e4eb8276753b54bb94c1c50c317e
+
+FSRCNNX_x2_8-0-4-1.glsl (03/05/21) 
 https://github.com/igv/FSRCNN-TensorFlow
 FSRCNN extended with local residual learning and recursive blocks with pre-activation structure.
 
-KrigBilateral.glsl
+KrigBilateral.glsl (03/16/21)
 https://gist.github.com/igv/a015fc885d5c22e6891820ad89555637
 
-SSimDownscaler.glsl
+SSimDownscaler.glsl (07/03//20)
 https://gist.github.com/igv/36508af3ffc84410fe39761d6969be10
 Tuned for use with dscale=mitchell and linear-downscaling=no. Localities are the main parameter to control sharpening strength, lower - sharper. 
 
