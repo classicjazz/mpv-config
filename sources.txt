@@ -1,9 +1,5 @@
 Following are the sources for some of the included scripts and shaders:
 
-SCRIPTS
-auto-profiles.lua
-https://github.com/wiiaboo/mpv-scripts
-
 SHADERS
 adaptive-sharpen.glsl (11/14/20)
 https://gist.github.com/igv/8a77e4eb8276753b54bb94c1c50c317e
