@@ -1,3 +1,8 @@
+// Revised (unknown)
+// https://raw.githubusercontent.com/haasn/gentoo-conf/xor/home/nand/.mpv/shaders/filmgrain.glsl
+//
+// Film Grain by haasn
+//
 //!HOOK LUMA
 //!BIND HOOKED
 //!DESC gaussian film grain

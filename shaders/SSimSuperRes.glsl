@@ -1,4 +1,5 @@
-// Revised 02/28/22
+// Revised 02/07/22
+// https://gist.github.com/igv/2364ffa6e81540f29cb7ab4c9bc05b6b
 //
 // SSimSuperRes by Shiandow
 //
