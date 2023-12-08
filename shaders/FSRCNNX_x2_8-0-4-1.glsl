@@ -1,4 +1,4 @@
-// Revised 03/05/21
+// Revised 12/08/23
 // https://github.com/deus0ww/mpv-conf/tree/master/shaders/igv
 //
 // FSRCNNX by igv

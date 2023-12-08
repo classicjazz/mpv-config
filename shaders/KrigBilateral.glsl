@@ -1,5 +1,6 @@
-// Revised 05/30/22
+// Revised 12/08/23
 // https://gist.github.com/igv/a015fc885d5c22e6891820ad89555637
+// https://raw.githubusercontent.com/deus0ww/mpv-conf/master/shaders/bilateral/KrigBilateral.glsl
 //
 // KrigBilateral by Shiandow
 //
@@ -17,18 +18,18 @@
 // License along with this library.
 
 //!HOOK CHROMA
-//!BIND HOOKED
 //!BIND LUMA
+//!BIND HOOKED
 //!SAVE LOWRES_Y
 //!WIDTH LUMA.w
 //!WHEN CHROMA.w LUMA.w <
-//!DESC KrigBilateral Downscaling Y pass 1
+//!DESC KrigBilateral Downscaling Y 1
 
 #define offset      vec2(0)
 
 #define axis        1
 
-#define Kernel(x)   dot(vec3(0.42659, -0.49656, 0.076849), cos(vec3(0, 1, 2) * acos(-1.) * (x + 1.)))
+#define Kernel(x)   dot(vec3(0.426590713671539, -0.496560619088564, 0.0768486672398968), cos(vec3(0, 1, 2) * acos(-1.) * (x + 1.)))
 
 vec4 hook() {
     // Calculate bounds
@@ -55,17 +56,17 @@ vec4 hook() {
 }
 
 //!HOOK CHROMA
-//!BIND HOOKED
 //!BIND LOWRES_Y
+//!BIND HOOKED
 //!SAVE LOWRES_Y
 //!WHEN CHROMA.w LUMA.w <
-//!DESC KrigBilateral Downscaling Y pass 2
+//!DESC KrigBilateral Downscaling Y 2
 
 #define offset      vec2(0)
 
 #define axis        0
 
-#define Kernel(x)   dot(vec3(0.42659, -0.49656, 0.076849), cos(vec3(0, 1, 2) * acos(-1.) * (x + 1.)))
+#define Kernel(x)   dot(vec3(0.426590713671539, -0.496560619088564, 0.0768486672398968), cos(vec3(0, 1, 2) * acos(-1.) * (x + 1.)))
 
 vec4 hook() {
     // Calculate bounds
@@ -101,10 +102,11 @@ vec4 hook() {
 //!OFFSET ALIGN
 //!DESC KrigBilateral Upscaling UV
 
-#define sqr(x)      dot(x,x)
-#define sigma_nsq   256.0/(255.0*255.0)
+#define radius	    1.0					// 1.0 <-> 1.5 higher is sharper
 
+#define sigma_nsq   256.0/(255.0*255.0)
 #define N           8
+#define sqr(x)      dot(x,x)
 
 #define M(i,j)      Mx[min(i,j)*N + max(i,j) - (min(i,j)*(min(i,j)+1))/2]
 
@@ -138,7 +140,6 @@ vec4 hook() {
     total.xyz /= total.w;
     float localVar = abs(total.y - total.x * total.x) + sigma_nsq;
     float Var = localVar + total.z;
-    float radius = 1.0;
 
     float y = LUMA_texOff(0).x;
     float Mx[(N*(N+1))/2];
