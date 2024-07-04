@@ -1,4 +1,4 @@
-// Revised 02/02/2024
+// Revised 07/04/2024
 // https://github.com/Artoriuz/glsl-chroma-from-luma-prediction
 //
 // MIT License
@@ -64,8 +64,8 @@ float comp_wd(vec2 v) {
 
 vec4 hook() {
     float ar_strength = 0.8;
-    vec2 mix_coeff = vec2(1.0);
-    vec2 corr_exponent = vec2(8.0);
+    vec2 mix_coeff = vec2(0.8);
+    vec2 corr_exponent = vec2(4.0);
 
     vec4 output_pix = vec4(0.0, 0.0, 0.0, 1.0);
     float luma_zero = LUMA_texOff(0.0).x;
