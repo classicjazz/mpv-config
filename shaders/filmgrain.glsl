@@ -1,13 +1,17 @@
 // Revised (unknown)
-// https://raw.githubusercontent.com/haasn/gentoo-conf/xor/home/nand/.mpv/shaders/filmgrain.glsl
 //
-// Film Grain by haasn
+// https://raw.githubusercontent.com/deus0ww/mpv-conf/refs/heads/master/shaders/filmgrain/filmgrain.glsl
 //
+//!PARAM fg_intensity
+//!DESC Film Grain Intensity
+//!TYPE float
+//!MINIMUM 0.0
+//!MAXIMUM 1.0
+0.05
+
 //!HOOK LUMA
 //!BIND HOOKED
-//!DESC gaussian film grain
-
-#define INTENSITY 0.05
+//!DESC Film Grain Gaussian
 
 float permute(float x)
 {
@@ -40,6 +44,6 @@ vec4 hook()
     grain *= 0.255121822830526; // normalize to [-1,1)
 
     vec4 color = HOOKED_tex(HOOKED_pos);
-    color.rgb += vec3(INTENSITY * grain);
+    color.r += fg_intensity * grain;
     return color;
 }
