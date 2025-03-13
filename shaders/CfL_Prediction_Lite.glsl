@@ -1,6 +1,6 @@
-// Revised 12/05/2024
+// Revised 02/20/25
 // https://github.com/Artoriuz/glsl-chroma-from-luma-prediction
-//
+
 // MIT License
 
 // Copyright (c) 2023 João Chrisóstomo

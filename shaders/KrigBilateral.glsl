@@ -1,7 +1,6 @@
 // Revised 12/08/23
 // https://gist.github.com/igv/a015fc885d5c22e6891820ad89555637
-// https://raw.githubusercontent.com/deus0ww/mpv-conf/master/shaders/bilateral/KrigBilateral.glsl
-//
+
 // KrigBilateral by Shiandow
 //
 // This library is free software; you can redistribute it and/or
