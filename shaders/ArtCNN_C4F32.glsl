@@ -1,6 +1,7 @@
-// Revised 02/20/25
+// Revised 05/06/25
+//
 // https://github.com/Artoriuz/ArtCNN
-// Release v1.2.3
+// Release v1.3
 
 // MIT License
 

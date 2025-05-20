@@ -1,6 +1,5 @@
 // Revised 12/08/23
 // https://gist.github.com/igv/2364ffa6e81540f29cb7ab4c9bc05b6b
-// https://raw.githubusercontent.com/deus0ww/mpv-conf/master/shaders/igv/SSimSuperRes.glsl
 //
 // SSimSuperRes by Shiandow
 //
@@ -23,17 +22,17 @@
 //!HEIGHT NATIVE_CROPPED.h
 //!WHEN NATIVE_CROPPED.h OUTPUT.h <
 //!COMPONENTS 4
-//!DESC SSSR Downscaling 1 [robidoux]
+//!DESC SSSR Downscaling I
 
 #define axis        1
 
 #define offset      vec2(0,0)
 
 #define MN(B,C,x)   (x < 1.0 ? ((2.-1.5*B-(C))*x + (-3.+2.*B+C))*x*x + (1.-(B)/3.) : (((-(B)/6.-(C))*x + (B+5.*C))*x + (-2.*B-8.*C))*x+((4./3.)*B+4.*C))
-#define Kernel(x)   MN(0.3782157550939987, 0.3108921224530007, abs(x))
+#define Kernel(x)   MN(0.334, 0.333, abs(x))
 #define taps        2.0
 
-#define Luma(rgb)   dot(rgb*rgb, vec3(0.212655, 0.715158, 0.072187))
+#define Luma(rgb)   dot(rgb*rgb, vec3(0.2126, 0.7152, 0.0722))
 
 vec4 hook() {
     float low  = ceil((HOOKED_pos - taps/input_size) * HOOKED_size - offset - 0.5)[axis];
@@ -66,17 +65,17 @@ vec4 hook() {
 //!HEIGHT NATIVE_CROPPED.h
 //!WHEN NATIVE_CROPPED.w OUTPUT.w <
 //!COMPONENTS 4
-//!DESC SSSR Downscaling 2 [robidoux]
+//!DESC SSSR Downscaling II
 
 #define axis        0
 
 #define offset      vec2(0,0)
 
 #define MN(B,C,x)   (x < 1.0 ? ((2.-1.5*B-(C))*x + (-3.+2.*B+C))*x*x + (1.-(B)/3.) : (((-(B)/6.-(C))*x + (B+5.*C))*x + (-2.*B-8.*C))*x+((4./3.)*B+4.*C))
-#define Kernel(x)   MN(0.3782157550939987, 0.3108921224530007, abs(x))
+#define Kernel(x)   MN(0.334, 0.333, abs(x))
 #define taps        2.0
 
-#define Luma(rgb)   dot(rgb*rgb, vec3(0.212655, 0.715158, 0.072187))
+#define Luma(rgb)   dot(rgb*rgb, vec3(0.2126, 0.7152, 0.0722))
 
 vec4 hook() {
     float low  = ceil((LOWRES_pos - taps/input_size) * LOWRES_size - offset - 0.5)[axis];
@@ -117,7 +116,7 @@ vec4 hook() {
 #define GetL(x,y)   PREKERNEL_tex(PREKERNEL_pt * (PREKERNEL_pos * input_size + tex_offset + vec2(x,y))).rgb
 #define GetH(x,y)   LOWRES_texOff(vec2(x,y)).rgb
 
-#define Luma(rgb)   dot(rgb*rgb, vec3(0.212655, 0.715158, 0.072187))
+#define Luma(rgb)   dot(rgb*rgb, vec3(0.2126, 0.7152, 0.0722))
 #define diff(x,y)   vec2(Luma((GetL(x,y) - meanL)), Luma((GetH(x,y) - meanH)))
 
 vec4 hook() {
@@ -150,7 +149,7 @@ vec4 hook() {
 //!BIND LOWRES
 //!BIND var
 //!WHEN NATIVE_CROPPED.h OUTPUT.h <
-//!DESC SSSR Final
+//!DESC SSSR final pass
 
 #define oversharp   0.5
 
@@ -167,7 +166,7 @@ vec4 hook() {
 #define GetL(x,y)   PREKERNEL_tex(PREKERNEL_pt * (pos + tex_offset + vec2(x,y) + 0.5)).rgb
 #define GetH(x,y)   LOWRES_tex(LOWRES_pt * (pos + vec2(x,y) + 0.5))
 
-#define Luma(rgb)   dot(rgb*rgb, vec3(0.212655, 0.715158, 0.072187))
+#define Luma(rgb)   dot(rgb*rgb, vec3(0.2126, 0.7152, 0.0722))
 
 vec4 hook() {
     vec4 c0 = HOOKED_texOff(0);
